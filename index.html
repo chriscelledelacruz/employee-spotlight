@@ -6,28 +6,51 @@
   <title>Employee Spotlight</title>
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <style>
-    * {
+    .spotlight-widget {
+      font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+      background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+      padding: 1.5rem;
+      position: relative;
+      overflow: hidden;
+      box-sizing: border-box;
+    }
+    
+    .spotlight-widget *,
+    .spotlight-widget *::before,
+    .spotlight-widget *::after {
       margin: 0;
       padding: 0;
       box-sizing: border-box;
     }
     
-    body {
-      font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
-      min-height: 100vh;
-      background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
-      padding: 1.5rem;
-      overflow-x: hidden;
-    }
-    
     @media (min-width: 768px) {
-      body { padding: 2.5rem; }
+      .spotlight-widget { padding: 2.5rem; }
     }
     
-    .container {
+    .spotlight-container {
       max-width: 48rem;
       margin: 0 auto;
       position: relative;
+      z-index: 1;
+    }
+    
+    /* Confetti - contained within widget */
+    .confetti-container {
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      overflow: hidden;
+      pointer-events: none;
+      z-index: 0;
+    }
+    
+    .confetti {
+      position: absolute;
+      top: -10px;
+      will-change: transform;
+      animation: confetti-fall linear infinite;
     }
     
     /* Animations */
@@ -47,8 +70,8 @@
     }
     
     @keyframes confetti-fall {
-      0% { transform: translateY(-10px) rotate(0deg); opacity: 1; }
-      100% { transform: translateY(100vh) rotate(360deg); opacity: 0; }
+      0% { transform: translateY(0) rotate(0deg); opacity: 1; }
+      100% { transform: translateY(800px) rotate(360deg); opacity: 0; }
     }
     
     @keyframes float {
@@ -70,15 +93,8 @@
       animation: shimmer 3s ease-in-out infinite;
     }
     
-    .confetti {
-      position: fixed;
-      top: -10px;
-      pointer-events: none;
-      animation: confetti-fall linear infinite;
-    }
-    
     /* Header */
-    .header {
+    .spotlight-header {
       text-align: center;
       margin-bottom: 2rem;
     }
@@ -109,14 +125,15 @@
       letter-spacing: 0.1em;
     }
     
-    .header h1 {
+    .spotlight-header h1 {
       font-size: 1.75rem;
       font-weight: 800;
       color: white;
+      line-height: 1.2;
     }
     
     @media (min-width: 768px) {
-      .header h1 { font-size: 2.25rem; }
+      .spotlight-header h1 { font-size: 2.25rem; }
     }
     
     /* Winner Card */
@@ -127,14 +144,12 @@
       padding: 1.5rem;
       margin-bottom: 1.5rem;
       position: relative;
-      overflow: hidden;
     }
     
     @media (min-width: 768px) {
       .winner-card { padding: 2rem; }
     }
     
-    /* Winner Badge */
     .winner-badge {
       position: absolute;
       top: 1rem;
@@ -271,6 +286,7 @@
     .winner-location svg {
       width: 0.75rem;
       height: 0.75rem;
+      flex-shrink: 0;
     }
     
     /* Values */
@@ -306,7 +322,6 @@
       border: 1px solid rgba(255, 255, 255, 0.1);
       border-radius: 0.5rem;
       transition: transform 0.2s, background 0.2s;
-      cursor: default;
     }
     
     .value-tag:hover {
@@ -362,7 +377,6 @@
       align-items: center;
       gap: 0.75rem;
       transition: transform 0.2s, background 0.2s;
-      cursor: default;
     }
     
     .runnerup-card:hover {
@@ -467,6 +481,7 @@
       border-radius: 9999px;
       cursor: pointer;
       transition: transform 0.2s, box-shadow 0.2s;
+      font-family: inherit;
     }
     
     .cta-button:hover {
@@ -491,7 +506,7 @@
     }
     
     /* Footer */
-    .footer {
+    .spotlight-footer {
       margin-top: 2rem;
       padding-top: 1rem;
       border-top: 1px solid rgba(255, 255, 255, 0.05);
@@ -526,174 +541,189 @@
   </style>
 </head>
 <body>
-  <!-- Confetti Container -->
-  <div id="confetti-container"></div>
-  
-  <div class="container">
-    <!-- Header -->
-    <div class="header fade-up" style="animation-delay: 0.1s;">
-      <div class="header-badge">
-        <div class="header-badge-dot"></div>
-        <span class="header-badge-text">Recognition</span>
-      </div>
-      <h1>Employee <span class="shimmer-gold">Spotlight</span></h1>
-    </div>
+  <div class="spotlight-widget">
+    <!-- Confetti Container - now properly contained -->
+    <div class="confetti-container" id="confetti-container"></div>
     
-    <!-- Winner Card -->
-    <div class="winner-card fade-up" style="animation-delay: 0.2s;">
-      <span class="winner-badge">★ WINNER</span>
+    <div class="spotlight-container">
+      <!-- Header -->
+      <div class="spotlight-header fade-up" style="animation-delay: 0.1s;">
+        <h1>Employee <span class="shimmer-gold">Spotlight</span></h1>
+      </div>
       
-      <div class="winner-content">
-        <div class="avatar-wrapper">
-          <div class="avatar">
-            <span class="avatar-initials">SC</span>
-          </div>
-          <div class="avatar-trophy">🏆</div>
-          <div class="nomination-count" id="winnerCount">0</div>
-        </div>
+      <!-- Winner Card -->
+      <div class="winner-card fade-up" style="animation-delay: 0.2s;">
+        <span class="winner-badge">★ WINNER</span>
         
-        <div class="winner-info">
-          <h2 class="winner-name">Dr. Sarah Chen</h2>
-          <p class="winner-title">Senior Cardiologist</p>
-          <p class="winner-location">
-            <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-              <path stroke-linecap="round" stroke-linejoin="round" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-              <path stroke-linecap="round" stroke-linejoin="round" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
-            </svg>
-            Rochester, MN
-          </p>
-        </div>
-      </div>
-      
-      <!-- Values -->
-      <div class="values-section">
-        <p class="values-title">Values Demonstrated</p>
-        <div class="values-grid">
-          <div class="value-tag">
-            <span class="value-emoji">⭐</span>
-            <span class="value-name">Excellence</span>
-            <span class="value-count" data-value="18">0</span>
+        <div class="winner-content">
+          <div class="avatar-wrapper">
+            <div class="avatar">
+              <span class="avatar-initials">SC</span>
+            </div>
+            <div class="avatar-trophy">🏆</div>
+            <div class="nomination-count" id="winnerCount">0</div>
           </div>
-          <div class="value-tag">
-            <span class="value-emoji">💙</span>
-            <span class="value-name">Compassion</span>
-            <span class="value-count" data-value="15">0</span>
-          </div>
-          <div class="value-tag">
-            <span class="value-emoji">🤝</span>
-            <span class="value-name">Teamwork</span>
-            <span class="value-count" data-value="14">0</span>
-          </div>
-        </div>
-      </div>
-    </div>
-    
-    <!-- Runner-ups -->
-    <div class="runnerups-section fade-up" style="animation-delay: 0.4s;">
-      <p class="runnerups-title">🎉 Honorable Mentions</p>
-      
-      <div class="runnerups-grid">
-        <div class="runnerup-card">
-          <div class="runnerup-avatar">
-            <div class="runnerup-avatar-img runnerup-avatar-silver">MT</div>
-            <span class="runnerup-rank">#2</span>
-          </div>
-          <div class="runnerup-info">
-            <p class="runnerup-name">Michael Torres, RN</p>
-            <p class="runnerup-title">ICU Nurse Manager</p>
-          </div>
-          <div class="runnerup-stats">
-            <span class="runnerup-count" data-value="38">0</span>
-            <p class="runnerup-label">Nominations</p>
+          
+          <div class="winner-info">
+            <h2 class="winner-name">Dr. Sarah Chen</h2>
+            <p class="winner-title">Senior Cardiologist</p>
+            <p class="winner-location">
+              <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                <path stroke-linecap="round" stroke-linejoin="round" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+              </svg>
+              Rochester, MN
+            </p>
           </div>
         </div>
         
-        <div class="runnerup-card">
-          <div class="runnerup-avatar">
-            <div class="runnerup-avatar-img runnerup-avatar-bronze">EJ</div>
-            <span class="runnerup-rank">#3</span>
-          </div>
-          <div class="runnerup-info">
-            <p class="runnerup-name">Dr. Emily Johnson</p>
-            <p class="runnerup-title">Pediatric Surgeon</p>
-          </div>
-          <div class="runnerup-stats">
-            <span class="runnerup-count" data-value="31">0</span>
-            <p class="runnerup-label">Nominations</p>
+        <!-- Values -->
+        <div class="values-section">
+          <p class="values-title">Values Demonstrated</p>
+          <div class="values-grid">
+            <div class="value-tag">
+              <span class="value-emoji">⭐</span>
+              <span class="value-name">Excellence</span>
+              <span class="value-count" data-value="18">0</span>
+            </div>
+            <div class="value-tag">
+              <span class="value-emoji">💙</span>
+              <span class="value-name">Compassion</span>
+              <span class="value-count" data-value="15">0</span>
+            </div>
+            <div class="value-tag">
+              <span class="value-emoji">🤝</span>
+              <span class="value-name">Teamwork</span>
+              <span class="value-count" data-value="14">0</span>
+            </div>
           </div>
         </div>
       </div>
-    </div>
+      
+      <!-- Runner-ups -->
+      <div class="runnerups-section fade-up" style="animation-delay: 0.4s;">
+        <p class="runnerups-title">🎉 Honorable Mentions</p>
+        
+        <div class="runnerups-grid">
+          <div class="runnerup-card">
+            <div class="runnerup-avatar">
+              <div class="runnerup-avatar-img runnerup-avatar-silver">MT</div>
+              <span class="runnerup-rank">#2</span>
+            </div>
+            <div class="runnerup-info">
+              <p class="runnerup-name">Michael Torres, RN</p>
+              <p class="runnerup-title">ICU Nurse Manager</p>
+            </div>
+            <div class="runnerup-stats">
+              <span class="runnerup-count" data-value="38">0</span>
+              <p class="runnerup-label">Nominations</p>
+            </div>
+          </div>
+          
+          <div class="runnerup-card">
+            <div class="runnerup-avatar">
+              <div class="runnerup-avatar-img runnerup-avatar-bronze">EJ</div>
+              <span class="runnerup-rank">#3</span>
+            </div>
+            <div class="runnerup-info">
+              <p class="runnerup-name">Dr. Emily Johnson</p>
+              <p class="runnerup-title">Pediatric Surgeon</p>
+            </div>
+            <div class="runnerup-stats">
+              <span class="runnerup-count" data-value="31">0</span>
+              <p class="runnerup-label">Nominations</p>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <!-- CTA -->
+      <div class="cta-section fade-up" style="animation-delay: 0.5s;">
+        <button class="cta-button">
+          Nominate a Colleague
+          <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M13 7l5 5m0 0l-5 5m5-5H6" />
+          </svg>
+        </button>
+        <p class="cta-note">Recognition period ends January 31, 2026</p>
+      </div>
     
-    <!-- CTA -->
-    <div class="cta-section fade-up" style="animation-delay: 0.5s;">
-      <button class="cta-button">
-        Nominate a Colleague
-        <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
-          <path stroke-linecap="round" stroke-linejoin="round" d="M13 7l5 5m0 0l-5 5m5-5H6" />
-        </svg>
-      </button>
-      <p class="cta-note">Recognition period ends December 31, 2025</p>
     </div>
-    
   </div>
   
   <script>
-    // Create confetti (reduced amount)
-    function createConfetti() {
-      const container = document.getElementById('confetti-container');
-      const colors = ['#0284c7', '#0ea5e9', '#f59e0b', '#10b981'];
-      
-      for (let i = 0; i < 15; i++) {
-        const confetti = document.createElement('div');
-        confetti.className = 'confetti';
-        confetti.style.left = Math.random() * 100 + '%';
-        confetti.style.width = (4 + Math.random() * 6) + 'px';
-        confetti.style.height = confetti.style.width;
-        confetti.style.background = colors[Math.floor(Math.random() * colors.length)];
-        confetti.style.borderRadius = Math.random() > 0.5 ? '50%' : '2px';
-        confetti.style.animationDelay = Math.random() * 5 + 's';
-        confetti.style.animationDuration = (4 + Math.random() * 3) + 's';
-        container.appendChild(confetti);
-      }
-    }
-    
-    // Animate numbers
-    function animateValue(element, end, duration) {
-      const startTime = Date.now();
-      
-      function update() {
-        const elapsed = Date.now() - startTime;
-        const progress = Math.min(elapsed / duration, 1);
-        const eased = 1 - Math.pow(1 - progress, 3);
-        element.textContent = Math.floor(end * eased);
+    (function() {
+      // Create confetti - contained within widget
+      function createConfetti() {
+        const container = document.getElementById('confetti-container');
+        if (!container) return;
         
-        if (progress < 1) requestAnimationFrame(update);
+        const colors = ['#0284c7', '#0ea5e9', '#f59e0b', '#10b981'];
+        
+        for (let i = 0; i < 12; i++) {
+          const confetti = document.createElement('div');
+          confetti.className = 'confetti';
+          const size = 4 + Math.random() * 5;
+          confetti.style.cssText = `
+            left: ${Math.random() * 100}%;
+            width: ${size}px;
+            height: ${size}px;
+            background: ${colors[Math.floor(Math.random() * colors.length)]};
+            border-radius: ${Math.random() > 0.5 ? '50%' : '2px'};
+            animation-delay: ${Math.random() * 5}s;
+            animation-duration: ${6 + Math.random() * 4}s;
+          `;
+          container.appendChild(confetti);
+        }
       }
       
-      requestAnimationFrame(update);
-    }
-    
-    document.addEventListener('DOMContentLoaded', () => {
-      createConfetti();
+      // Animate numbers
+      function animateValue(element, end, duration) {
+        const startTime = performance.now();
+        
+        function update(currentTime) {
+          const elapsed = currentTime - startTime;
+          const progress = Math.min(elapsed / duration, 1);
+          const eased = 1 - Math.pow(1 - progress, 3);
+          element.textContent = Math.floor(end * eased);
+          
+          if (progress < 1) {
+            requestAnimationFrame(update);
+          }
+        }
+        
+        requestAnimationFrame(update);
+      }
       
-      // Animate winner count
-      setTimeout(() => {
-        animateValue(document.getElementById('winnerCount'), 47, 1200);
-      }, 400);
+      // Initialize
+      function init() {
+        createConfetti();
+        
+        // Animate winner count
+        const winnerCount = document.getElementById('winnerCount');
+        if (winnerCount) {
+          setTimeout(() => animateValue(winnerCount, 47, 1200), 400);
+        }
+        
+        // Animate value counts
+        document.querySelectorAll('.value-count').forEach((el, i) => {
+          const value = parseInt(el.dataset.value);
+          setTimeout(() => animateValue(el, value, 1000), 600 + i * 100);
+        });
+        
+        // Animate runner-up counts
+        document.querySelectorAll('.runnerup-count').forEach((el, i) => {
+          const value = parseInt(el.dataset.value);
+          setTimeout(() => animateValue(el, value, 1000), 800 + i * 100);
+        });
+      }
       
-      // Animate value counts
-      document.querySelectorAll('.value-count').forEach((el, i) => {
-        const value = parseInt(el.dataset.value);
-        setTimeout(() => animateValue(el, value, 1000), 600 + i * 100);
-      });
-      
-      // Animate runner-up counts
-      document.querySelectorAll('.runnerup-count').forEach((el, i) => {
-        const value = parseInt(el.dataset.value);
-        setTimeout(() => animateValue(el, value, 1000), 800 + i * 100);
-      });
-    });
+      if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', init);
+      } else {
+        init();
+      }
+    })();
   </script>
 </body>
 </html>
